@@ -4,7 +4,7 @@ from astrbot.api import logger
 from datetime import datetime, timedelta
 from .user_data import UserData
 
-@register("mai_sgin", "Rinyin", "maimai出勤签到插件", "0.0.2")
+@register("mai_sgin", "Rinyin", "maimai出勤签到插件", "1.0.0")
 class MyPlugin(Star):
     def __init__(self, context: Context):
         super().__init__(context)
@@ -134,8 +134,8 @@ class MyPlugin(Star):
     @mai.command("help")
     async def mai_help(self, event: AstrMessageEvent):
         yield event.plain_result("/mai help（获取帮助）\n"
-                                  "/mai in(出勤签到)\n"
-                                  "/mai out（退勤签到）\n"
+                                  "/mai in [HH:MM](出勤签到)\n"
+                                  "/mai out [HH:MM] [add_rt]（退勤签到）\n"
                                   "/mai rating（更新rating）\n"
                                   "/mai day（获取出勤天数）\n"
                                   "/mai time（获取出勤时间）\n"
