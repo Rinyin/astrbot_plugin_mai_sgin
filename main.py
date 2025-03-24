@@ -136,7 +136,7 @@ class MyPlugin(Star):
         yield event.plain_result("/mai help（获取帮助）\n"
                                   "/mai in [HH:MM](出勤签到)\n"
                                   "/mai out [HH:MM] [add_rt]（退勤签到）\n"
-                                  "/mai rating（更新rating）\n"
+                                  "/mai rating <rt值>（更新rating）\n"
                                   "/mai day（获取出勤天数）\n"
                                   "/mai time（获取出勤时间）\n"
                                   "/mai rt（获取rating）\n"
