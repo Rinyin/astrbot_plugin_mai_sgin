@@ -2,7 +2,7 @@ from astrbot.api.event import filter, AstrMessageEvent, MessageEventResult
 from astrbot.api.star import Context, Star, register
 from astrbot.api import logger
 from datetime import datetime, timedelta
-from .user_data import UserData  # 新增导入
+from .user_data import UserData
 
 @register("mai_sgin", "Rinyin", "maimai出勤签到插件", "0.0.2")
 class MyPlugin(Star):
@@ -18,7 +18,7 @@ class MyPlugin(Star):
 
     @mai.command("in")
     def mai_in(self, event: AstrMessageEvent, time_str: str = None):
-        user_id = event.sender.id  # 获取用户ID
+        user_id = event.get_sender_id()  # 获取用户ID
         if time_str:
             try:
                 time_str = time_str.replace('：', ':')  # 将全角冒号替换为半角冒号
@@ -38,7 +38,7 @@ class MyPlugin(Star):
     
     @mai.command("out")
     def mai_out(self, event: AstrMessageEvent, time_str: str = None, new_rt: int = None):
-        user_id = event.sender.id
+        user_id = event.get_sender_id()
         if user_id in self.user_checkin_data:
             if time_str:
                 try:
@@ -78,7 +78,7 @@ class MyPlugin(Star):
     
     @mai.command("rating")
     def mai_rating(self, event: AstrMessageEvent, rating: int):
-        user_id = event.sender.id
+        user_id = event.get_sender_id()
         if 0 <= rating <= 16547:
             if user_id not in self.user_data:
                 self.user_data[user_id] = UserData()  # 初始化用户数据
@@ -90,7 +90,7 @@ class MyPlugin(Star):
         
     @mai.command("day")
     def mai_day(self, event: AstrMessageEvent):
-        user_id = event.sender.id
+        user_id = event.get_sender_id()
         if user_id in self.user_data:
             return MessageEventResult(f"你的总出勤天数是 {self.user_data[user_id].total_checkin_days}")
         else:
@@ -98,7 +98,7 @@ class MyPlugin(Star):
         
     @mai.command("time")
     def mai_time(self, event: AstrMessageEvent):
-        user_id = event.sender.id
+        user_id = event.get_sender_id()
         if user_id in self.user_data:
             return MessageEventResult(f"你的总出勤时间是 {self.user_data[user_id].total_checkin_time}")
         else:
@@ -106,7 +106,7 @@ class MyPlugin(Star):
         
     @mai.command("rt")
     def mai_rt_view(self, event: AstrMessageEvent):
-        user_id = event.sender.id
+        user_id = event.get_sender_id()
         if user_id in self.user_data:
             return MessageEventResult(f"你的 rating 是 {self.user_data[user_id].rating}")
         else:
@@ -114,7 +114,7 @@ class MyPlugin(Star):
 
     @mai.command("reset")
     def mai_reset(self, event: AstrMessageEvent):
-        user_id = event.sender.id
+        user_id = event.get_sender_id()
         if user_id in self.user_data:
             self.user_backup_data[user_id] = self.user_data[user_id]  # 备份用户数据
             self.user_data[user_id] = UserData()  # 重置用户数据
@@ -124,7 +124,7 @@ class MyPlugin(Star):
 
     @mai.command("unreset")
     def mai_unreset(self, event: AstrMessageEvent):
-        user_id = event.sender.id
+        user_id = event.get_sender_id()
         if user_id in self.user_backup_data:
             self.user_data[user_id] = self.user_backup_data.pop(user_id)  # 恢复备份数据
             return MessageEventResult("你的数据已恢复")
