@@ -10,6 +10,7 @@ class MyPlugin(Star):
         super().__init__(context)
         self.user_checkin_data = {}  # 用于存储用户签到信息的字典
         self.user_data = {}  # 新增：用于存储用户出退勤信息的字典
+        self.user_backup_data = {}  # 新增：用于备份用户数据的字典
     
     @filter.command_group("mai")
     def mai(self):
@@ -111,6 +112,25 @@ class MyPlugin(Star):
         else:
             return MessageEventResult("请先使用 /rating rt值 更新rating")
 
+    @mai.command("reset")
+    def mai_reset(self, event: AstrMessageEvent):
+        user_id = event.user_id
+        if user_id in self.user_data:
+            self.user_backup_data[user_id] = self.user_data[user_id]  # 备份用户数据
+            self.user_data[user_id] = UserData()  # 重置用户数据
+            return MessageEventResult("你的数据已重置")
+        else:
+            return MessageEventResult("没有找到你的数据")
+
+    @mai.command("unreset")
+    def mai_unreset(self, event: AstrMessageEvent):
+        user_id = event.user_id
+        if user_id in self.user_backup_data:
+            self.user_data[user_id] = self.user_backup_data.pop(user_id)  # 恢复备份数据
+            return MessageEventResult("你的数据已恢复")
+        else:
+            return MessageEventResult("没有找到你的备份数据")
+
     @mai.command("help")
     def mai_help(self, event: AstrMessageEvent):
         return MessageEventResult("/mai help（获取帮助）\n"
@@ -119,4 +139,6 @@ class MyPlugin(Star):
                                   "/mai rating（更新rating）\n"
                                   "/mai day（获取出勤天数）\n"
                                   "/mai time（获取出勤时间）\n"
-                                  "/mai rt（获取rating）")
+                                  "/mai rt（获取rating）\n"
+                                  "/mai reset（重置数据）\n"
+                                  "/mai unreset（恢复数据）")
