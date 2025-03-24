@@ -4,13 +4,13 @@ from astrbot.api import logger
 from datetime import datetime, timedelta
 from .user_data import UserData  # 新增导入
 
-@register("mai_sgin", "Rinyin", "maimai出勤签到插件", "1.0.0")
+@register("mai_sgin", "Rinyin", "maimai出勤签到插件", "0.0.1")
 class MyPlugin(Star):
     def __init__(self, context: Context):
         super().__init__(context)
         self.user_checkin_data = {}  # 用于存储用户签到信息的字典
-        self.user_data = {}  # 新增：用于存储用户出退勤信息的字典
-        self.user_backup_data = {}  # 新增：用于备份用户数据的字典
+        self.user_data = {}  # 用于存储用户出退勤信息的字典
+        self.user_backup_data = {}  # 用于备份用户数据的字典
     
     @filter.command_group("mai")
     def mai(self):
@@ -124,7 +124,11 @@ class MyPlugin(Star):
 
     @mai.command("unreset")
     def mai_unreset(self, event: AstrMessageEvent):
-        user_id = event.user_id
+        try:
+            user_id = event.user_id
+        except AttributeError:
+            return MessageEventResult("无法获取用户ID，请确保正确调用该命令")
+        
         if user_id in self.user_backup_data:
             self.user_data[user_id] = self.user_backup_data.pop(user_id)  # 恢复备份数据
             return MessageEventResult("你的数据已恢复")
