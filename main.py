@@ -17,7 +17,7 @@ class MyPlugin(Star):
         pass
 
     @mai.command("in")
-    def mai_in(self, event: AstrMessageEvent, time_str: str = None):
+    async def mai_in(self, event: AstrMessageEvent, time_str: str = None):
         user_id = event.get_sender_id()  # 获取用户ID
         if time_str:
             try:
@@ -37,7 +37,7 @@ class MyPlugin(Star):
         yield MessageEventResult("舞萌，启动！")
     
     @mai.command("out")
-    def mai_out(self, event: AstrMessageEvent, time_str: str = None, new_rt: int = None):
+    async def mai_out(self, event: AstrMessageEvent, time_str: str = None, new_rt: int = None):
         user_id = event.get_sender_id()
         if user_id in self.user_checkin_data:
             if time_str:
@@ -77,7 +77,7 @@ class MyPlugin(Star):
             yield MessageEventResult("没出勤就退勤，你是在玩ADX？")
     
     @mai.command("rating")
-    def mai_rating(self, event: AstrMessageEvent, rating: int):
+    async def mai_rating(self, event: AstrMessageEvent, rating: int):
         user_id = event.get_sender_id()
         if 0 <= rating <= 16547:
             if user_id not in self.user_data:
@@ -89,7 +89,7 @@ class MyPlugin(Star):
             yield MessageEventResult("rating 应在 0 到 16547 之间")
         
     @mai.command("day")
-    def mai_day(self, event: AstrMessageEvent):
+    async def mai_day(self, event: AstrMessageEvent):
         user_id = event.get_sender_id()
         if user_id in self.user_data:
             yield MessageEventResult(f"你的总出勤天数是 {self.user_data[user_id].total_checkin_days}")
@@ -97,7 +97,7 @@ class MyPlugin(Star):
             yield MessageEventResult("懒比")
         
     @mai.command("time")
-    def mai_time(self, event: AstrMessageEvent):
+    async def mai_time(self, event: AstrMessageEvent):
         user_id = event.get_sender_id()
         if user_id in self.user_data:
             yield MessageEventResult(f"你的总出勤时间是 {self.user_data[user_id].total_checkin_time}")
@@ -105,7 +105,7 @@ class MyPlugin(Star):
             yield MessageEventResult("懒比")
         
     @mai.command("rt")
-    def mai_rt_view(self, event: AstrMessageEvent):
+    async def mai_rt_view(self, event: AstrMessageEvent):
         user_id = event.get_sender_id()
         if user_id in self.user_data:
             yield MessageEventResult(f"你的 rating 是 {self.user_data[user_id].rating}")
@@ -113,7 +113,7 @@ class MyPlugin(Star):
             yield MessageEventResult("请先使用 /rating rt值 更新rating")
 
     @mai.command("reset")
-    def mai_reset(self, event: AstrMessageEvent):
+    async def mai_reset(self, event: AstrMessageEvent):
         user_id = event.get_sender_id()
         if user_id in self.user_data:
             self.user_backup_data[user_id] = self.user_data[user_id]  # 备份用户数据
@@ -123,7 +123,7 @@ class MyPlugin(Star):
             yield MessageEventResult("没有找到你的数据")
 
     @mai.command("unreset")
-    def mai_unreset(self, event: AstrMessageEvent):
+    async def mai_unreset(self, event: AstrMessageEvent):
         user_id = event.get_sender_id()
         if user_id in self.user_backup_data:
             self.user_data[user_id] = self.user_backup_data.pop(user_id)  # 恢复备份数据
@@ -132,7 +132,7 @@ class MyPlugin(Star):
             yield MessageEventResult("没有找到你的备份数据")
 
     @mai.command("help")
-    def mai_help(self, event: AstrMessageEvent):
+    async def mai_help(self, event: AstrMessageEvent):
         yield MessageEventResult("/mai help（获取帮助）\n"
                                   "/mai in(出勤签到)\n"
                                   "/mai out（退勤签到）\n"
