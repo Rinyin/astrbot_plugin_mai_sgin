@@ -4,7 +4,7 @@ from astrbot.api import logger
 from datetime import datetime, timedelta
 from .user_data import UserData
 
-@register("mai_sgin", "Rinyin", "maimai出勤签到插件", "1.0.0")
+@register("mai_sgin", "Rinyin", "maimai出勤签到插件", "1.0.1")
 class MyPlugin(Star):
     def __init__(self, context: Context):
         super().__init__(context)
@@ -19,6 +19,10 @@ class MyPlugin(Star):
     @mai.command("in")
     async def mai_in(self, event: AstrMessageEvent, time_str: str = None):
         user_id = event.get_sender_id()  # 获取用户ID
+        if user_id in self.user_checkin_data:
+            yield event.plain_result("你已经签到过了，请先退勤再签到")
+            return
+        
         if time_str:
             try:
                 time_str = time_str.replace('：', ':')  # 将全角冒号替换为半角冒号
@@ -50,12 +54,20 @@ class MyPlugin(Star):
             else:
                 checkin_data = self.user_checkin_data[user_id]
                 out_date = checkin_data["date"]
-                out_time = checkin_data["time"]
+                out_time = datetime.now().time()  # 使用当前时间作为退勤时间
             
             checkin_data = self.user_checkin_data[user_id]
             in_datetime = datetime.combine(checkin_data["date"], checkin_data["time"])
             out_datetime = datetime.combine(out_date, out_time)
             duration = out_datetime - in_datetime
+            
+            if duration < timedelta(0):
+                yield event.plain_result("反方向的出勤？（出勤时间不能为负数）")
+                return
+            
+            if out_datetime > datetime.now():
+                yield event.plain_result("真的退勤了吗？（退勤时间不得晚于当前时间）")
+                return
             
             if duration > timedelta(hours=12):
                 yield event.plain_result("勤12小时？超人来的？")
@@ -67,14 +79,15 @@ class MyPlugin(Star):
                     logger.info(f"用户 {user_id} 退勤日期: {out_date}, 退勤时间: {out_time}")
                     yield event.plain_result(f"退勤成功，你今天勤了 {duration} 小时哦！今天涨了{new_rt}分，你现在的rating是{self.user_data[user_id].rating}")
                 else:
-                    yield event.plain_result("开了？")
+                    yield event.plain_result("开了？（w0以上每次rating增长不得高于1000）")
             else:
                 self.user_data[user_id].add_checkin(duration, out_date)  # 更新用户数据
                 logger.info(f"用户 {user_id} 签到日期: {checkin_data['date']}, 签到时间: {checkin_data['time']}")
                 logger.info(f"用户 {user_id} 退勤日期: {out_date}, 退勤时间: {out_time}")
                 yield event.plain_result(f"退勤成功，你今天勤了 {duration} 小时哦！")
+            del self.user_checkin_data[user_id]  # 移除用户的签到信息
         else:
-            yield event.plain_result("没出勤就退勤，你是在玩ADX？")
+            yield event.plain_result("没出勤就退勤？")
     
     @mai.command("rating")
     async def mai_rating(self, event: AstrMessageEvent, rating: int):
@@ -110,7 +123,7 @@ class MyPlugin(Star):
         if user_id in self.user_data:
             yield event.plain_result(f"你的 rating 是 {self.user_data[user_id].rating}")
         else:
-            yield event.plain_result("请先使用 /rating rt值 更新rating")
+            yield event.plain_result("请先使用 /rating <rt值> 更新rating")
 
     @mai.command("reset")
     async def mai_reset(self, event: AstrMessageEvent):
@@ -134,9 +147,9 @@ class MyPlugin(Star):
     @mai.command("help")
     async def mai_help(self, event: AstrMessageEvent):
         yield event.plain_result("/mai help（获取帮助）\n"
-                                  "/mai in [HH:MM](出勤签到)\n"
-                                  "/mai out [HH:MM] [add_rt]（退勤签到）\n"
-                                  "/mai rating <rt值>（更新rating）\n"
+                                  "/mai in(出勤签到)\n"
+                                  "/mai out（退勤签到）\n"
+                                  "/mai rating（更新rating）\n"
                                   "/mai day（获取出勤天数）\n"
                                   "/mai time（获取出勤时间）\n"
                                   "/mai rt（获取rating）\n"
